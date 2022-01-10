@@ -1,0 +1,6 @@
+[TYPECHECK]
+generated-members=sh
+ignored-modules=sh
+
+[MASTER]
+extension-pkg-whitelist=pydantic
