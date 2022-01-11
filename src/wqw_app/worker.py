@@ -156,11 +156,6 @@ async def startup(ctx: WorkerContext) -> None:
     ctx["backend"] = backend
 
 
-async def shutdown(ctx):
-    """Shutdown logic goes here."""
-    del ctx["backend"]
-
-
 # WorkerSettings defines the settings to use when creating the work,
 # it's used by the arq cli
 # pylint: disable=too-few-public-methods
@@ -169,4 +164,4 @@ class WorkerSettings:
 
     functions = [async_fib]
     on_startup = startup
-    on_shutdown = shutdown
+    # on_shutdown = shutdown
