@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 
 # from devtools import debug
 
-from wqw_app.worker import backend, fibonacci
+from wqw_app.worker import backend, async_fib
 
 
 app = FastAPI()
@@ -35,14 +35,14 @@ def read_root() -> JSONResponse:
 async def post_task(number: int) -> JSONResponse:
     """Post a calculation task."""
 
-    if job := await backend.redis.enqueue_job(fibonacci.__name__, number):
+    if job := await backend.enqueue_job(async_fib, number):
         if job_info := await job.info():
             return JSONResponse(
                 content={
                     "task_id": job.job_id,
                     "submitted_at": job_info.enqueue_time.strftime("%c"),
                 },
-                status_code=200,
+                status_code=202,
             )
 
     return JSONResponse(content={"error": "Failed to enqueue task."}, status_code=500)
@@ -52,7 +52,7 @@ async def post_task(number: int) -> JSONResponse:
 async def read_task_list() -> JSONResponse:
     """Get list of calculation tasks."""
     task_list = []
-    for task in await backend.redis.queued_jobs():
+    for task in await backend.queued_jobs():
         task_dict = asdict(task)
         task_dict["submitted_at"] = task_dict.pop("enqueue_time").strftime("%c")
         task_list.append(task_dict)
