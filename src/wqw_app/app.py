@@ -1,9 +1,8 @@
 """
 Web app
 """
-from dataclasses import asdict
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 
 # from devtools import debug
 
@@ -25,13 +24,18 @@ async def shutdown():
     await backend.close()
 
 
-@app.get("/")
-def read_root() -> JSONResponse:
-    """Root"""
-    return JSONResponse(content={"Hello": "World"}, status_code=200)
+@app.get("/", summary="Landing page")
+def read_root() -> HTMLResponse:
+    """Landing page"""
+    return HTMLResponse(
+        content="""
+        <h1>Welcome to the Fibonacci app!</h1>
+        <div>Go to the <a href="/docs">docs</a> to get started!</div>""",
+        status_code=200,
+    )
 
 
-@app.post("/fib")
+@app.post("/fib/calc", summary="Calculate a Fibonacci number.")
 async def post_task(number: int) -> JSONResponse:
     """Post a calculation task."""
 
@@ -48,19 +52,15 @@ async def post_task(number: int) -> JSONResponse:
     return JSONResponse(content={"error": "Failed to enqueue task."}, status_code=500)
 
 
-@app.get("/fib")
+@app.get("/fib/results", summary="List of the results from all Fibonacci calculations.")
 async def read_task_list() -> JSONResponse:
     """Get list of calculation tasks."""
-    task_list = []
-    for task in await backend.queued_jobs():
-        task_dict = asdict(task)
-        task_dict["submitted_at"] = task_dict.pop("enqueue_time").strftime("%c")
-        task_list.append(task_dict)
-
-    return JSONResponse(content=task_list, status_code=200)
+    return JSONResponse(content=await backend.results(), status_code=200)
 
 
-@app.get("/fib/{task_id}")
+@app.get(
+    "/fib/results/{task_id}", summary="Result of a particular Fibonacci calculation."
+)
 def read_task(task_id: int) -> JSONResponse:
     """Get status for a calculation task."""
     return JSONResponse(content={"task_id": task_id}, status_code=200)
