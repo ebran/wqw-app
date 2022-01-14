@@ -24,7 +24,7 @@ async def shutdown():
     await backend.close()
 
 
-@app.get("/", summary="Landing page")
+@app.get("/", summary="Landing page", include_in_schema=False)
 def read_root() -> HTMLResponse:
     """Landing page"""
     return HTMLResponse(
@@ -35,31 +35,32 @@ def read_root() -> HTMLResponse:
     )
 
 
-@app.post("/fib/calc", summary="Calculate a Fibonacci number.")
+@app.post("/compute", summary="Compute a Fibonacci number.")
 async def post_task(number: int) -> JSONResponse:
-    """Post a calculation task."""
+    """Post a computation task."""
 
-    if job := await backend.enqueue_job(async_fib, number):
-        if job_info := await job.info():
-            return JSONResponse(
-                content={
-                    "task_id": job.job_id,
-                    "submitted_at": job_info.enqueue_time.strftime("%c"),
-                },
-                status_code=202,
-            )
+    if (job := await backend.enqueue_job(async_fib, number)) and (
+        job_info := await job.info()
+    ):
+        return JSONResponse(
+            content={
+                "task_id": job.job_id,
+                "submitted_at": job_info.enqueue_time.strftime("%c"),
+            },
+            status_code=202,
+        )
 
     return JSONResponse(content={"error": "Failed to enqueue task."}, status_code=500)
 
 
-@app.get("/fib/results", summary="List of the results from all Fibonacci calculations.")
+@app.get("/results", summary="Results from all Fibonacci computation.")
 async def read_task_list() -> JSONResponse:
     """Get list of calculation tasks."""
     return JSONResponse(content=await backend.results(), status_code=200)
 
 
 @app.get(
-    "/fib/results/{task_id}", summary="Result of a particular Fibonacci calculation."
+    "/results/{task_id}", summary="Result from a particular Fibonacci computation."
 )
 def read_task(task_id: int) -> JSONResponse:
     """Get status for a calculation task."""
