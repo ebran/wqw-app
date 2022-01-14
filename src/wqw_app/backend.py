@@ -1,11 +1,12 @@
 """arq backend module."""
 import asyncio
 import pickle
-from typing import Union, Callable, Optional, Any, Iterable, Tuple, Dict, TypedDict
+from typing import Union, Callable, Optional, Any, Iterable, Tuple, Dict
 from datetime import datetime, timedelta
 from collections import ChainMap
 from dataclasses import asdict
 
+from typing_extensions import TypedDict
 from arq.jobs import Job, JobStatus
 from arq.connections import create_pool, ArqRedis, RedisSettings
 from arq import constants

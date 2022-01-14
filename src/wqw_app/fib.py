@@ -1,14 +1,41 @@
 """Module for Fibonacci computations."""
+from typing import List
+
+from pydantic import BaseModel
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from wqw_app.backend import backend
+from wqw_app.backend import backend, JobResultDict
 from wqw_app.worker import async_fib
 
 router = APIRouter()
 
 
-@router.post("/compute", summary="Compute a Fibonacci number.")
+class ResponseAccepted(BaseModel):
+    """Computation was accepted."""
+
+    task_id: str
+    submitted_at: str
+
+
+class ResponseNotAccepted(BaseModel):
+    """Computation was not accepted."""
+
+    error: str
+
+
+@router.post(
+    "/compute",
+    summary="Compute a Fibonacci number.",
+    responses={
+        202: {"description": "Computation was accepted.", "model": ResponseAccepted},
+        500: {
+            "description": "Computation was not accepted.",
+            "model": ResponseNotAccepted,
+        },
+    },
+    tags=["Computations"],
+)
 async def post_task(number: int) -> JSONResponse:
     """Post a computation task."""
 
@@ -26,14 +53,29 @@ async def post_task(number: int) -> JSONResponse:
     return JSONResponse(content={"error": "Failed to enqueue task."}, status_code=500)
 
 
-@router.get("/results", summary="Results from all Fibonacci computation.")
+@router.get(
+    "/results",
+    summary="Results from all Fibonacci computation.",
+    responses={
+        200: {
+            "description": "All Fibonacci computation tasks.",
+            "model": List[JobResultDict],
+        }
+    },
+    tags=["Results"],
+)
 async def read_task_list() -> JSONResponse:
     """Get list of calculation tasks."""
     return JSONResponse(content=await backend.info_all(), status_code=200)
 
 
 @router.get(
-    "/results/{task_id}", summary="Result from a particular Fibonacci computation."
+    "/results/{task_id}",
+    summary="Result from a particular Fibonacci computation.",
+    responses={
+        200: {"description": "Fibonacci computation task.", "model": JobResultDict}
+    },
+    tags=["Results"],
 )
 async def read_task(task_id: str) -> JSONResponse:
     """Get status for a calculation task."""
