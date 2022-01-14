@@ -4,139 +4,17 @@ Worker.
 import asyncio
 import pickle
 import itertools as it
-from typing import (
-    List,
-    Optional,
-    TypedDict,
-    Union,
-    Any,
-    Callable,
-    Iterator,
-    Tuple,
-    Dict,
-    cast,
-)
+from typing import Optional, TypedDict, Union, Any, Iterator, Dict, cast
 from concurrent import futures
-from datetime import datetime, timedelta
-from dataclasses import fields
+from datetime import datetime
 
 import redis
+from arq.connections import ArqRedis
 
-from arq.connections import create_pool, ArqRedis, RedisSettings
-from arq.jobs import Job
-from arq.constants import result_key_prefix
-
-from wqw_app.utils import removeprefix
+from wqw_app.backend import backend
 
 PHI = (1 + 5 ** 0.5) / 2
 PSI = (1 - 5 ** 0.5) / 2
-
-
-class TaskResult(TypedDict):
-    """Result of a finished task."""
-
-    function: str
-    args: Tuple[Any, ...]
-    kwargs: Dict[Any, Any]
-    job_try: int
-    enqueue_time: str
-    score: Optional[int]
-    success: bool
-    result: Any
-    start_time: str
-    finish_time: str
-    queue_name: str
-    job_id: str
-
-
-class Backend:
-    """arq backend."""
-
-    def __init__(self, redis_settings: RedisSettings = None):
-        self._redis_settings: RedisSettings = (
-            redis_settings if redis_settings is not None else RedisSettings()
-        )
-        self._redis_arq: Optional[ArqRedis] = None
-
-    async def init(self):
-        """Initialize connection pools to the backend."""
-        self._redis_arq = await create_pool(self._redis_settings)
-
-    async def close(self):
-        """Close the connection pools to the backend."""
-        self.redis_arq.close()
-        await self.redis_arq.wait_closed()
-
-    async def enqueue_job(
-        self,
-        function: Union[str, Callable],
-        *args: Any,
-        _job_id: Optional[str] = None,
-        _queue_name: Optional[str] = None,
-        _defer_until: Optional[datetime] = None,
-        _defer_by: Union[None, int, float, timedelta] = None,
-        _expires: Union[None, int, float, timedelta] = None,
-        _job_try: Optional[int] = None,
-        **kwargs: Any,
-    ) -> Optional[Job]:
-        """Enqueue a job"""
-        assert isinstance(function, (str, Callable))
-        if isinstance(function, Callable):
-            function = function.__name__
-
-        return await self.redis_arq.enqueue_job(
-            function,
-            *args,
-            _job_id=_job_id,
-            _queue_name=_queue_name,
-            _defer_until=_defer_until,
-            _defer_by=_defer_by,
-            _expires=_expires,
-            _job_try=_job_try,
-            **kwargs,
-        )
-
-    async def results(self) -> List[Optional[TaskResult]]:
-        """Return all results."""
-        results = []
-        for key in await self.redis_arq.keys(f"{result_key_prefix}*"):
-            job_id = removeprefix(key, prefix=result_key_prefix)
-            job = Job(job_id=job_id, redis=backend.redis_arq)
-
-            if info := await job.info():
-                results.append(
-                    dict(
-                        {
-                            key: val.strftime("%c")
-                            if isinstance(val, datetime)
-                            else val
-                            for field in fields(info)
-                            if (key := field.name) and (val := getattr(info, key))
-                        },  # type: ignore
-                        job_id=job_id,
-                    )
-                )
-            else:
-                results.append(None)
-
-        return results
-
-    @property
-    def redis_arq(self):
-        """Return the redis connection."""
-        if self._redis_arq is None:
-            raise RuntimeError("Fatal: No async redis connection.")
-        return self._redis_arq
-
-    @property
-    def redis_settings(self):
-        """Return the redis settings."""
-        if self._redis_settings is None:
-            raise RuntimeError("Fatal: Could not obtain redis settings.")
-        return self._redis_settings
-
-
-backend = Backend()
 
 
 class WorkerContext(TypedDict):
