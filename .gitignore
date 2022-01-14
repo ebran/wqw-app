@@ -1,0 +1,4 @@
+.gitignore
+notebooks/*
+src/wqw_app/__pycache__/*
+tests/__pycache__/*
