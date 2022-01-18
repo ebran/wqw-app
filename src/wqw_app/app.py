@@ -2,12 +2,14 @@
 
 Welcome to the world's greatest.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.templating import Jinja2Templates
 
-from wqw_app import fib, __version__ as version
+from wqw_app import _html, fib, __version__ as version
 from wqw_app.backend import backend
 
 app = FastAPI(
@@ -17,6 +19,10 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
 
 
 @app.on_event("startup")
@@ -31,15 +37,12 @@ async def shutdown():
     await backend.close()
 
 
-@app.get("/", summary="Landing page", include_in_schema=False)
-def read_root() -> HTMLResponse:
+@app.get(
+    "/", summary="Landing page", include_in_schema=False, response_class=HTMLResponse
+)
+def fibonacci_calculator(request: Request) -> Response:
     """Landing page"""
-    return HTMLResponse(
-        content="""
-        <h1>Welcome to the Fibonacci app!</h1>
-        <div>Go to the <a href="/docs">docs</a> to get started!</div>""",
-        status_code=200,
-    )
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get(
@@ -78,7 +81,16 @@ def openapi():
 
 
 # Add router endpoints
+# JSON API
 app.include_router(
     fib.router,
     prefix="/fibonacci",
+)
+
+# HTML endpoints
+app.include_router(
+    _html.router,
+    prefix="/_html",
+    include_in_schema=False,
+    default_response_class=HTMLResponse,
 )
