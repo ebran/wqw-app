@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 from wqw_app import _html, fib, __version__ as version
 from wqw_app.backend import backend
+from wqw_app.utils import unique_string
 
 app = FastAPI(
     title="Fibonacci calculator",
@@ -42,7 +43,11 @@ async def shutdown():
 )
 def fibonacci_calculator(request: Request) -> Response:
     """Landing page"""
-    return templates.TemplateResponse("index.html", {"request": request})
+    working_id = unique_string()
+
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "working_id": working_id}
+    )
 
 
 @app.get(

@@ -1,9 +1,9 @@
-<div class="row mt-4">
+<div id="{{ working_id }}" class="row mt-4">
     <div class="col-md-auto align-self-center">
         <div class="input-group col">
             <span class="input-group-text">N</span>
             <input type="text" class="form-control" style="width:75px" aria-label="Integer" placeholder="40">
-            <button type="button" hx-get="/_html/new" class="btn btn-primary"
+            <button type="button" hx-get="/_html/add" hx-target="#{{ working_id }}" hx-swap="outerHTML" class="btn btn-primary"
                 style="margin-left: 15px;">Compute</button>
         </div>
     </div>
@@ -14,6 +14,6 @@
         </div>
     </div>
     <div class="col-md-2 align-self-center htmx-hidden">
-        <button type="button" class="btn btn-danger">Abort</button>
+        <button type="button" class="btn btn-danger">Cancel</button>
     </div>
 </div>
