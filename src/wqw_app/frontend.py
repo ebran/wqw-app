@@ -3,13 +3,9 @@ import json
 
 import httpx
 
-from devtools import debug
-
 from fastapi import APIRouter, Request, Response, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-
-from wqw_app.utils import unique_string
 
 templates = Jinja2Templates(directory="templates")
 
@@ -22,13 +18,10 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
 
     Return one in-progress component and one waiting component.
     """
-    task_id = unique_string()
-
     async with httpx.AsyncClient() as client:
         # Post computation to server.
         response = await client.post(
             f"{request.url.scheme}://{request.url.netloc}/api/compute/{number}",
-            params={"task_id": task_id},
         )
 
         data = {}
@@ -37,7 +30,7 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
         except json.JSONDecodeError:
             print("JSON decoding failed")
 
-        assert task_id == data.get("task_id", None)
+        task_id = data.get("task_id")
 
     return templates.TemplateResponse(
         "partials/add.html",
@@ -50,11 +43,11 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
     )
 
 
-@router.get("/in_progress/{task_id}", summary="Get progress for computation.")
+@router.get("/status/{task_id}", summary="Get computation status.")
 async def get_progress(request: Request, task_id: str) -> Response:
-    """Get task progress.
+    """Get task status.
 
-    Return one progress component.
+    Return in_progress, completed, or not_found component.
     """
     async with httpx.AsyncClient() as client:
         # Get result for task from server.
@@ -106,10 +99,3 @@ async def get_progress(request: Request, task_id: str) -> Response:
 async def clear() -> Response:
     """Return an empty response."""
     return HTMLResponse(content="", status_code=200)
-
-
-@router.post("/test", summary="Return test message.")
-async def test(request: Request) -> Response:
-    """Return an empty response."""
-    debug(request)
-    return HTMLResponse(content="ok", status_code=200)

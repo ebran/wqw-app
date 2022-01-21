@@ -1,4 +1,4 @@
-<div class="row mt-4" hx-get="/_html/in_progress/{{ task_id }}" hx-trigger="load delay:600ms" hx-swap="outerHTML">
+<div class="row mt-4" hx-get="/frontend/status/{{ task_id }}" hx-trigger="load delay:600ms" hx-swap="outerHTML">
     <div class="col-md-auto align-self-center">
         <div class="input-group col">
             <span class="input-group-text">N</span>
@@ -8,8 +8,8 @@
         </div>
     </div>
     <div class="col align-self-center">
-        <div class="progress smooth" style="height: 38px; font-size: medium;">
-            <div class="progress-bar smooth" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0"
+        <div class="progress" style="height: 38px; font-size: medium;">
+            <div class="progress-bar" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0"
                 aria-valuemax="100">{{ progress }}%</div>
         </div>
     </div>

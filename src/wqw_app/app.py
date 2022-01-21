@@ -2,19 +2,15 @@
 
 Welcome to the world's greatest.
 """
-import logging
-
-from fastapi import FastAPI, Request, Response, status
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.templating import Jinja2Templates
-from fastapi.exceptions import RequestValidationError
 
-from wqw_app import _html, fib, __version__ as version
+from wqw_app import fib, __version__ as version, frontend
 from wqw_app.backend import backend
-from wqw_app.utils import unique_string
 
 
 app = FastAPI(
@@ -25,18 +21,6 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Debug ValidationError"""
-    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
-    logging.error(f"{request}: {exc_str}")
-    content = {"status_code": 10422, "message": exc_str, "data": None}
-    return JSONResponse(
-        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
-
 
 templates = Jinja2Templates(directory="templates")
 
@@ -61,13 +45,11 @@ async def shutdown():
 )
 def components(request: Request) -> Response:
     """Landing page"""
-    task_id = unique_string()
-
     return templates.TemplateResponse(
         "components.html",
         {
             "request": request,
-            "task_id": task_id,
+            "task_id": "foobar",
             "number": 42,
             "progress": 45,
             "result": 12345678,
@@ -80,11 +62,7 @@ def components(request: Request) -> Response:
 )
 def fibonacci_calculator(request: Request) -> Response:
     """Landing page"""
-    task_id = unique_string()
-
-    return templates.TemplateResponse(
-        "index.html", {"request": request, "task_id": task_id}
-    )
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get(
@@ -126,14 +104,14 @@ def openapi():
     return openapi_schema
 
 
-# Add router endpoints
+# Add fibonacci endpoints
 # JSON API
 app.include_router(fib.router, prefix="/api")
 
-# HTML endpoints
+# HTML frontend endpoints
 app.include_router(
-    _html.router,
-    prefix="/_html",
+    frontend.router,
+    prefix="/frontend",
     include_in_schema=False,
     default_response_class=HTMLResponse,
 )
