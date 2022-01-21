@@ -7,6 +7,8 @@ from fastapi import APIRouter, Request, Response, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from wqw_app.api import post_task, read_task
+
 templates = Jinja2Templates(directory="templates")
 
 router = APIRouter()
@@ -20,9 +22,7 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
     """
     async with httpx.AsyncClient() as client:
         # Post computation to server.
-        response = await client.post(
-            f"{request.url.scheme}://{request.url.netloc}/api/compute/{number}",
-        )
+        response = await client.post(request.url_for(post_task.__name__, number=number))
 
         data = {}
         try:
@@ -52,7 +52,7 @@ async def get_progress(request: Request, task_id: str) -> Response:
     async with httpx.AsyncClient() as client:
         # Get result for task from server.
         response = await client.get(
-            f"{request.url.scheme}://{request.url.netloc}/api/results/{task_id}"
+            request.url_for(read_task.__name__, task_id=task_id)
         )
 
         data = {}

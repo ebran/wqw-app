@@ -84,6 +84,14 @@ class Backend:
             **kwargs,
         )
 
+    async def abort(
+        self, job_id: str, timeout: Optional[float] = None, poll_delay: float = 0.5
+    ) -> bool:
+        """Abort a job."""
+        job = Job(job_id=job_id, redis=self.redis_arq)
+
+        return await job.abort(timeout=timeout, poll_delay=poll_delay)
+
     async def info(self, job_id: str) -> JobResultDict:
         """Return info on `job_id`."""
         job = Job(job_id=job_id, redis=self.redis_arq)
@@ -103,12 +111,17 @@ class Backend:
                 status=job_status.value,
             )
 
-            return JobResultDict(
-                **{
-                    k: v.strftime("%c") if isinstance(v, datetime) else v
-                    for (k, v) in job_data.items()
-                }  # type: ignore
-            )
+            job_result = {}
+            for (key, val) in job_data.items():
+                if isinstance(val, datetime):
+                    job_result[key] = val.strftime("%c")
+                elif isinstance(val, asyncio.CancelledError):
+                    job_result[key] = None
+                else:
+                    job_result[key] = val
+            job_result = JobResultDict(**job_result)
+
+            return job_result
 
         return JobResultDict(job_id=job_id, status=JobStatus.not_found)
 

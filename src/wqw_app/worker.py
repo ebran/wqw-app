@@ -151,5 +151,6 @@ class WorkerSettings:
     """Settings for the worker."""
 
     functions = [async_fib]
+    allow_abort_jobs = True
     on_startup = startup
     on_shutdown = shutdown

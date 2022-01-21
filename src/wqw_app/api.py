@@ -71,7 +71,7 @@ async def read_task_list() -> JSONResponse:
 
 @router.get(
     "/results/{task_id}",
-    summary="Result from a particular Fibonacci computation.",
+    summary="Result from a particular Fibonacci computations.",
     responses={
         200: {"description": "Fibonacci computation task.", "model": JobResultDict}
     },
@@ -82,4 +82,27 @@ async def read_task(task_id: str) -> JSONResponse:
     return JSONResponse(content=await backend.info(job_id=task_id), status_code=200)
 
 
-# await job.abort()
+@router.post(
+    "/cancel/{task_id}",
+    summary="Cancel a particular Fibonacci computation.",
+    responses={
+        202: {"description": "Request was accepted.", "model": RequestAccepted},
+        500: {
+            "description": "Request was not accepted.",
+            "model": RequestNotAccepted,
+        },
+    },
+    tags=["Computations"],
+)
+async def cancel_task(
+    task_id: str, timeout: Optional[float] = None, poll_delay: float = 0.5
+) -> JSONResponse:
+    """Cancel a computation task."""
+    return JSONResponse(
+        content={
+            "cancelled": await backend.abort(
+                job_id=task_id, timeout=timeout, poll_delay=poll_delay
+            )
+        },
+        status_code=202,
+    )

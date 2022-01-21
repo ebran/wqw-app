@@ -96,6 +96,12 @@ def openapi():
     openapi_schema["paths"]["/api/compute/{number}"]["post"]["responses"].pop(
         "422", None
     )
+    openapi_schema["paths"]["/api/cancel/{task_id}"]["post"]["responses"].pop(
+        "200", None
+    )
+    openapi_schema["paths"]["/api/cancel/{task_id}"]["post"]["responses"].pop(
+        "422", None
+    )
     openapi_schema["paths"]["/api/results"]["get"]["responses"].pop("422", None)
     openapi_schema["paths"]["/api/results/{task_id}"]["get"]["responses"].pop(
         "422", None
