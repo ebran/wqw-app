@@ -1,5 +1,5 @@
 """Module for Fibonacci computations."""
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 from fastapi import APIRouter
@@ -25,7 +25,7 @@ class ResponseNotAccepted(BaseModel):
 
 
 @router.post(
-    "/compute",
+    "/compute/{number}",
     summary="Compute a Fibonacci number.",
     responses={
         202: {"description": "Computation was accepted.", "model": ResponseAccepted},
@@ -36,10 +36,10 @@ class ResponseNotAccepted(BaseModel):
     },
     tags=["Computations"],
 )
-async def post_task(number: int) -> JSONResponse:
+async def post_task(number: int, task_id: Optional[str] = None) -> JSONResponse:
     """Post a computation task."""
 
-    if (job := await backend.enqueue_job(async_fib, number)) and (
+    if (job := await backend.enqueue_job(async_fib, number, _job_id=task_id)) and (
         job_info := await job.info()
     ):
         return JSONResponse(
