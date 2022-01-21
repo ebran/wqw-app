@@ -9,7 +9,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.templating import Jinja2Templates
 
-from wqw_app import fib, __version__ as version, frontend
+from wqw_app import api, __version__ as version, frontend
 from wqw_app.backend import backend
 
 
@@ -106,7 +106,7 @@ def openapi():
 
 # Add fibonacci endpoints
 # JSON API
-app.include_router(fib.router, prefix="/api")
+app.include_router(api.router, prefix="/api")
 
 # HTML frontend endpoints
 app.include_router(

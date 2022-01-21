@@ -80,3 +80,6 @@ async def read_task_list() -> JSONResponse:
 async def read_task(task_id: str) -> JSONResponse:
     """Get status for a calculation task."""
     return JSONResponse(content=await backend.info(job_id=task_id), status_code=200)
+
+
+# await job.abort()
