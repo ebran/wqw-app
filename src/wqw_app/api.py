@@ -11,15 +11,15 @@ from wqw_app.worker import async_fib
 router = APIRouter()
 
 
-class ResponseAccepted(BaseModel):
-    """Computation was accepted."""
+class RequestAccepted(BaseModel):
+    """Request was accepted."""
 
     task_id: str
     submitted_at: str
 
 
-class ResponseNotAccepted(BaseModel):
-    """Computation was not accepted."""
+class RequestNotAccepted(BaseModel):
+    """Request was not accepted."""
 
     error: str
 
@@ -28,10 +28,10 @@ class ResponseNotAccepted(BaseModel):
     "/compute/{number}",
     summary="Compute a Fibonacci number.",
     responses={
-        202: {"description": "Computation was accepted.", "model": ResponseAccepted},
+        202: {"description": "Request was accepted.", "model": RequestAccepted},
         500: {
-            "description": "Computation was not accepted.",
-            "model": ResponseNotAccepted,
+            "description": "Request was not accepted.",
+            "model": RequestNotAccepted,
         },
     },
     tags=["Computations"],
