@@ -1,5 +1,12 @@
 """Module for Fibonacci computations."""
-from fastapi import APIRouter, Request, Response
+import json
+
+import httpx
+
+from devtools import debug
+
+from fastapi import APIRouter, Request, Response, Form
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from wqw_app.utils import unique_string

@@ -12,6 +12,8 @@ arq = "^0.22"
 pydantic = "^1.9.0"
 redis = "^4.1.0"
 hiredis = "^2.0.0"
+httpx = "^0.21.3"
+python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
