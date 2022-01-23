@@ -24,6 +24,12 @@ class RequestNotAccepted(BaseModel):
     error: str
 
 
+class CancelRequestAccepted(BaseModel):
+    """Cancel request was accepted."""
+
+    cancelled: bool
+
+
 @router.post(
     "/compute/{number}",
     summary="Compute a Fibonacci number.",
@@ -86,11 +92,7 @@ async def read_task(task_id: str) -> JSONResponse:
     "/cancel/{task_id}",
     summary="Cancel a particular Fibonacci computation.",
     responses={
-        202: {"description": "Request was accepted.", "model": RequestAccepted},
-        500: {
-            "description": "Request was not accepted.",
-            "model": RequestNotAccepted,
-        },
+        202: {"description": "Request was accepted.", "model": CancelRequestAccepted},
     },
     tags=["Computations"],
 )

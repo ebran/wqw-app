@@ -1,5 +1,6 @@
 """Module for Fibonacci computations."""
 import json
+from typing import Optional
 
 import httpx
 
@@ -7,7 +8,7 @@ from fastapi import APIRouter, Request, Response, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from wqw_app.api import post_task, read_task
+from wqw_app import api
 
 templates = Jinja2Templates(directory="templates")
 
@@ -22,7 +23,9 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
     """
     async with httpx.AsyncClient() as client:
         # Post computation to server.
-        response = await client.post(request.url_for(post_task.__name__, number=number))
+        response = await client.post(
+            request.url_for(api.post_task.__name__, number=number)
+        )
 
         data = {}
         try:
@@ -47,12 +50,12 @@ async def add_task(request: Request, number: int = Form(...)) -> Response:
 async def get_progress(request: Request, task_id: str) -> Response:
     """Get task status.
 
-    Return in_progress, completed, or not_found component.
+    Return in_progress, completed, or error="not found" component.
     """
     async with httpx.AsyncClient() as client:
         # Get result for task from server.
         response = await client.get(
-            request.url_for(read_task.__name__, task_id=task_id)
+            request.url_for(api.read_task.__name__, task_id=task_id)
         )
 
         data = {}
@@ -83,16 +86,69 @@ async def get_progress(request: Request, task_id: str) -> Response:
                 {"request": request, "number": number, "result": result},
             ),
             "not_found": templates.TemplateResponse(
-                "partials/not_found.html",
+                "partials/error.html",
                 {
                     "request": request,
-                    "task_id": task_id,
                     "number": number,
+                    "task_id": task_id,
+                    "error": "not found",
                 },
             ),
         }
 
     return responses.get(status, responses["not_found"])
+
+
+@router.post("/cancel/{task_id}", summary="Get computation status.")
+async def cancel(
+    request: Request,
+    task_id: str,
+    timeout: Optional[float] = None,
+    poll_delay: float = 0.5,
+) -> Response:
+    """Cancel task.
+
+    Return error="cancelled" component.
+    """
+    async with httpx.AsyncClient() as client:
+        # Get result for task from server.
+        response = await client.get(
+            request.url_for(api.read_task.__name__, task_id=task_id)
+        )
+
+        data = {}
+        try:
+            data = response.json()
+        except json.JSONDecodeError:
+            print("JSON decoding failed")
+
+        number = data.get("args", [None])[0]
+
+        # Post cancel task to server.
+        params = {"poll_delay": poll_delay}
+        if timeout:
+            params["timeout"] = timeout
+        response = await client.post(
+            request.url_for(api.cancel_task.__name__, task_id=task_id), params=params
+        )
+
+        data = {}
+        try:
+            data = response.json()
+        except json.JSONDecodeError:
+            print("JSON decoding failed")
+
+        success = data.get("cancelled", False)
+
+    return templates.TemplateResponse(
+        "partials/error.html",
+        {
+            "request": request,
+            "number": number,
+            "task_id": task_id,
+            "error": "cancelled" if success else "failed to cancel",
+        },
+    )
 
 
 @router.get("/clear", summary="Return empty response.")

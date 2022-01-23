@@ -53,6 +53,7 @@ def components(request: Request) -> Response:
             "number": 42,
             "progress": 45,
             "result": 12345678,
+            "error": "not found",
         },
     )
 
