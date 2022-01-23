@@ -1,4 +1,4 @@
-<div class="row mt-4">
+<div class="row mt-4" hx-get="/frontend/clear" hx-trigger="load delay:2s" hx-swap="outerHTML">
     <div class="col-md-auto align-self-center">
         <div class="input-group col">
             <span class="input-group-text">N</span>
@@ -7,9 +7,13 @@
         </div>
     </div>
     <div class="col align-self-center">
-        <div class="progress" style="height: 38px; font-size: medium">
-            <div class="progress-bar bg-white text-dark" role="progressbar" style="width: 100%" aria-valuenow="100"
-                aria-valuemin="0" aria-valuemax="100">Task {{ task_id }} not found.</div>
+        <div class="progress-nowrap" style="height: 38px; font-size: medium">
+            <div class="progress-bar bg-white text-dark text-nowrap" role="progressbar" style="width: 100%" aria-valuenow="100"
+                aria-valuemin="0" aria-valuemax="100">
+                <span style="white-space:nowrap">
+                    Task {{ task_id }}: <span class="text-danger">{{ error }}</span>.
+                </span>
+            </div>
         </div>
     </div>
     <div class="col-md-1 align-self-center invisible"></div>
