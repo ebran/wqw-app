@@ -1,21 +1,23 @@
-<div class="row mt-4" hx-get="/frontend/status/{{ task_id }}" hx-trigger="load delay:600ms" hx-swap="outerHTML">
+<div id="task-{{ task_id }}" class="row mt-4" hx-get="/frontend/status/{{ task_id }}" hx-trigger="load delay:1s"
+    hx-swap="outerHTML">
     <div class="col-md-auto align-self-center">
         <div class="input-group col">
             <span class="input-group-text">N</span>
-            <input type="text" class="form-control" style="width:75px" aria-label="Integer" placeholder="{{ number }}" readonly>
-            <button type="button" class="btn btn-primary" style="margin-left: 15px;"
-                disabled>Compute</button>
+            <input type="text" class="form-control" style="width:75px" aria-label="Integer" placeholder="{{ number }}"
+                readonly>
+            <button type="button" class="btn btn-primary" style="margin-left: 15px;" disabled>Compute</button>
         </div>
     </div>
     <div class="col align-self-center">
         <div class="progress" style="height: 38px; font-size: medium;">
-            <div class="progress-bar" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0"
-                aria-valuemax="100">{{ progress }}%</div>
+            <div class="progress-bar" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}"
+                aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
         </div>
     </div>
     <div class="col-md-1 align-self-center">
         <div class="d-grid">
-            <button type="button" class="btn btn-danger" disabled>Cancel</button>
+            <button type="button" class="btn btn-danger" hx-post="/frontend/cancel/{{ task_id }}"
+                hx-target="#task-{{ task_id }}" hx-swap="outerHTML">Cancel</button>
         </div>
     </div>
     <div class="col-md-2 align-self-center"></div>
