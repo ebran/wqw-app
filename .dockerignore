@@ -1,0 +1,13 @@
+.gitignore
+.dockerignore
+.pylintrc
+Dockerfile
+Makefile
+README.md
+
+.pytest_cache/
+.git/
+.venv/
+notebooks/
+tests/
+typings/
