@@ -11,6 +11,7 @@ from arq.jobs import Job, JobStatus
 from arq.connections import create_pool, ArqRedis, RedisSettings
 from arq import constants
 
+from wqw_app.settings import get_redis_settings
 from wqw_app.utils import removeprefix, track_progress_key_prefix
 
 
@@ -42,7 +43,7 @@ class Backend:
 
     def __init__(self, redis_settings: RedisSettings = None):
         self._redis_settings: RedisSettings = (
-            redis_settings if redis_settings is not None else RedisSettings()
+            get_redis_settings() if redis_settings is None else redis_settings
         )
         self._redis_arq: Optional[ArqRedis] = None
 

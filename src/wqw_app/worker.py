@@ -12,6 +12,7 @@ import redis
 from arq.connections import ArqRedis
 
 from wqw_app.backend import backend
+from wqw_app.settings import get_redis_settings
 
 PHI = (1 + 5 ** 0.5) / 2
 PSI = (1 - 5 ** 0.5) / 2
@@ -151,6 +152,8 @@ class WorkerSettings:
     """Settings for the worker."""
 
     functions = [async_fib]
+    retry_jobs = False
+    redis_settings = get_redis_settings()
     allow_abort_jobs = True
     on_startup = startup
     on_shutdown = shutdown
