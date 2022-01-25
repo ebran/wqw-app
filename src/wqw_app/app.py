@@ -38,27 +38,6 @@ async def shutdown():
 
 
 @app.get(
-    "/components",
-    summary="Components",
-    include_in_schema=False,
-    response_class=HTMLResponse,
-)
-def components(request: Request) -> Response:
-    """Landing page"""
-    return templates.TemplateResponse(
-        "components.html",
-        {
-            "request": request,
-            "task_id": "foobar",
-            "number": 42,
-            "progress": 45,
-            "result": 12345678,
-            "error": "not found",
-        },
-    )
-
-
-@app.get(
     "/", summary="Landing page", include_in_schema=False, response_class=HTMLResponse
 )
 def fibonacci_calculator(request: Request) -> Response:
