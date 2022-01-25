@@ -24,3 +24,5 @@ services:
     environment:
       - REDIS_HOST=queue
       - REDIS_PORT=6379
+    depends_on:
+      - queue

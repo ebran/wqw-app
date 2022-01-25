@@ -16,12 +16,12 @@ RUN poetry export -o requirements.txt && poetry build -f wheel
 
 FROM python:3.9.10-slim as web
 
-COPY --from=builder /app/static /app/static
-COPY --from=builder /app/templates /app/templates
-COPY --from=builder /app/requirements.txt /app/requirements.txt
-COPY --from=builder /app/dist/ /app/dist/
+COPY --from=builder /app/static /web/static
+COPY --from=builder /app/templates /web/templates
+COPY --from=builder /app/requirements.txt /web/requirements.txt
+COPY --from=builder /app/dist/ /web/dist/
 
-WORKDIR /app
+WORKDIR /web
 
 RUN pip install -r requirements.txt
 RUN pip install wqw-app -f dist
@@ -30,4 +30,12 @@ CMD ["uvicorn", "wqw_app.app:app", "--reload", "--host", "0.0.0.0"]
 
 FROM python:3.9.10-slim as worker
 
-COPY --from=builder /app/requirements.txt /app/requirements.txt
+COPY --from=builder /app/requirements.txt /worker/requirements.txt
+COPY --from=builder /app/dist/ /worker/dist/
+
+WORKDIR /worker
+
+RUN pip install -r requirements.txt
+RUN pip install wqw-app -f dist
+
+CMD ["arq", "wqw_app.worker.WorkerSettings"]
