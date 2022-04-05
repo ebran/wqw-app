@@ -4,10 +4,6 @@
 
 Fibonacci calculator
 
-## TODO
-
-Add frontend with jinja2 + htmx + bootstrap
-
 ## Stack?
 
 - FastAPI for web server
